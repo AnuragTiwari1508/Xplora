@@ -1,5 +1,4 @@
 // Mappls Direct API Service - Using REST APIs without SDK
-"use server";
 
 const MAPPLS_API_BASE = 'https://apis.mappls.com';
 
