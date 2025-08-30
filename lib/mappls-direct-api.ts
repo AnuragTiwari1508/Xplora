@@ -13,13 +13,32 @@ interface MapplsConfig {
 // Mappls configuration from environment
 const mapplsConfig: MapplsConfig = {
   apiKey: process.env.NEXT_PUBLIC_MAPPLS_API_KEY || 'YOUR_API_KEY',
-  clientId: process.env.MAPPLS_CLIENT_ID || 'YOUR_CLIENT_ID',
-  clientSecret: process.env.MAPPLS_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
+  clientId: process.env.MAPPLS_CLIENT_ID || process.env.NEXT_PUBLIC_MAPPLS_CLIENT_ID || 'YOUR_CLIENT_ID',
+  clientSecret: process.env.MAPPLS_CLIENT_SECRET || process.env.NEXT_PUBLIC_MAPPLS_CLIENT_SECRET || 'YOUR_CLIENT_SECRET',
   baseUrl: MAPPLS_API_BASE
 };
 
+// Check if configuration is properly set
+function validateMapplsConfig(): { isValid: boolean; missingFields: string[] } {
+  const missingFields: string[] = [];
+  
+  if (!mapplsConfig.clientId || mapplsConfig.clientId === 'YOUR_CLIENT_ID') {
+    missingFields.push('MAPPLS_CLIENT_ID');
+  }
+  
+  if (!mapplsConfig.clientSecret || mapplsConfig.clientSecret === 'YOUR_CLIENT_SECRET') {
+    missingFields.push('MAPPLS_CLIENT_SECRET');
+  }
+  
+  return {
+    isValid: missingFields.length === 0,
+    missingFields
+  };
+}
+
 // Access token cache
 let accessToken: string | null = null;
+let tokenType: string = 'bearer';
 let tokenExpiryTime: number = 0;
 
 // Get OAuth access token for Mappls APIs
@@ -29,10 +48,16 @@ async function getAccessToken(): Promise<string> {
     return accessToken;
   }
 
+  // Validate configuration before making request
+  const configStatus = validateMapplsConfig();
+  if (!configStatus.isValid) {
+    throw new Error(`Missing required environment variables: ${configStatus.missingFields.join(', ')}. Please check your .env.local file.`);
+  }
+
   try {
     console.log('🔑 Getting Mappls OAuth token...');
     
-    const response = await fetch(`${MAPPLS_API_BASE}/advancedmaps/v1/oauth/token`, {
+    const response = await fetch(`${MAPPLS_API_BASE}/security/oauth/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -45,19 +70,109 @@ async function getAccessToken(): Promise<string> {
     });
 
     if (!response.ok) {
-      throw new Error(`OAuth failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OAuth API Error Response:', errorText);
+      throw new Error(`OAuth failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     accessToken = data.access_token;
-    tokenExpiryTime = Date.now() + (data.expires_in * 1000) - 60000; // 1 minute buffer
+    tokenType = data.token_type || 'bearer';
+    // Set token expiry time with 1 minute buffer for safety
+    tokenExpiryTime = Date.now() + (data.expires_in * 1000) - 60000;
 
-    console.log('✅ Got Mappls access token');
+    console.log('✅ Got Mappls access token:', {
+      token_type: data.token_type,
+      expires_in: data.expires_in,
+      scope: data.scope,
+      client_id: data.client_id
+    });
+    
+    if (!accessToken) {
+      throw new Error('No access token received from OAuth response');
+    }
+    
     return accessToken;
     
   } catch (error) {
     console.error('❌ Failed to get Mappls token:', error);
     throw error;
+  }
+}
+
+// Get properly formatted authorization header
+async function getAuthorizationHeader(): Promise<string> {
+  const token = await getAccessToken();
+  return `${tokenType} ${token}`;
+}
+
+// Test function to verify OAuth token generation
+export async function testMapplsAuth(): Promise<{
+  success: boolean;
+  token?: string;
+  tokenType?: string;
+  expiresIn?: number;
+  error?: string;
+  configStatus?: { isValid: boolean; missingFields: string[] };
+}> {
+  try {
+    console.log('🧪 Testing Mappls OAuth authentication...');
+    
+    // First validate configuration
+    const configStatus = validateMapplsConfig();
+    
+    if (!configStatus.isValid) {
+      return {
+        success: false,
+        error: `Missing required environment variables: ${configStatus.missingFields.join(', ')}`,
+        configStatus
+      };
+    }
+    
+    const response = await fetch(`${MAPPLS_API_BASE}/security/oauth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: mapplsConfig.clientId,
+        client_secret: mapplsConfig.clientSecret,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OAuth Test Failed:', errorText);
+      return {
+        success: false,
+        error: `OAuth failed: ${response.status} - ${errorText}`,
+        configStatus
+      };
+    }
+
+    const data = await response.json();
+    console.log('✅ OAuth Test Successful:', {
+      token_type: data.token_type,
+      expires_in: data.expires_in,
+      scope: data.scope
+    });
+
+    return {
+      success: true,
+      token: data.access_token,
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
+      configStatus
+    };
+    
+  } catch (error) {
+    console.error('❌ OAuth Test Error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      configStatus: validateMapplsConfig()
+    };
   }
 }
 
@@ -101,7 +216,7 @@ export async function searchIndorePlaces(options: PlaceSearchOptions): Promise<M
   try {
     console.log('🔍 Searching Indore places with Mappls API...');
     
-    const token = await getAccessToken();
+    const authHeader = await getAuthorizationHeader();
     
     // Default to Indore coordinates if not provided
     const location = options.location || '22.7196,75.8577'; // Indore center
@@ -116,13 +231,15 @@ export async function searchIndorePlaces(options: PlaceSearchOptions): Promise<M
 
     const response = await fetch(`${MAPPLS_API_BASE}/advancedmaps/v1/nearby?${params}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Mappls API failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Mappls API Error:', errorText);
+      throw new Error(`Mappls API failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -197,12 +314,12 @@ export async function getMapplsRoute(
   try {
     console.log('🗺️ Getting route from Mappls...');
     
-    const token = await getAccessToken();
+    const authHeader = await getAuthorizationHeader();
     
     const response = await fetch(`${MAPPLS_API_BASE}/advancedmaps/v1/route`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -216,7 +333,9 @@ export async function getMapplsRoute(
     });
 
     if (!response.ok) {
-      throw new Error(`Route API failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Route API Error:', errorText);
+      throw new Error(`Route API failed: ${response.status} - ${errorText}`);
     }
 
     const routeData = await response.json();
@@ -235,17 +354,19 @@ export async function getPlaceDetails(mapplsPin: string): Promise<any> {
   try {
     console.log(`🔍 Getting place details for PIN: ${mapplsPin}`);
     
-    const token = await getAccessToken();
+    const authHeader = await getAuthorizationHeader();
     
     const response = await fetch(`${MAPPLS_API_BASE}/advancedmaps/v1/place_detail?place_id=${mapplsPin}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Place details failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Place details API Error:', errorText);
+      throw new Error(`Place details failed: ${response.status} - ${errorText}`);
     }
 
     const placeData = await response.json();
@@ -264,7 +385,7 @@ export async function searchPlacesByText(query: string, location?: string): Prom
   try {
     console.log(`🔍 Searching places by text: "${query}"`);
     
-    const token = await getAccessToken();
+    const authHeader = await getAuthorizationHeader();
     
     const params = new URLSearchParams({
       query: query,
@@ -274,13 +395,15 @@ export async function searchPlacesByText(query: string, location?: string): Prom
 
     const response = await fetch(`${MAPPLS_API_BASE}/advancedmaps/v1/textsearch?${params}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Text search failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Text search API Error:', errorText);
+      throw new Error(`Text search failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
