@@ -295,24 +295,31 @@ function HomeSection({ userStats, onNavigate, isDarkMode }: { userStats: any; on
   return (
     <div className="space-y-6">
       {/* Welcome Banner - Theme aware */}
-      <Card className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white border-purple-500">
-        <CardContent className="p-6">
+      <Card className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white border-purple-500">
+        {/* Background Image with 60% opacity */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-60"
+          style={{ backgroundImage: 'url(/arcade-background.png)' }}
+        />
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/40 via-blue-900/40 to-indigo-900/40" />
+        <CardContent className="relative z-10 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold mb-2">Welcome back, Explorer! 🎮</h1>
-              <p className="text-white/90 mb-4">Ready to discover amazing places around you?</p>
+              <h1 className="text-2xl font-bold mb-2 text-white drop-shadow-lg">Welcome back, Explorer! 🎮</h1>
+              <p className="text-white/95 mb-4 drop-shadow-md">Ready to discover amazing places around you?</p>
               <div className="flex gap-3">
-                <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-1">
+                <div className="flex items-center gap-2 bg-white/30 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
                   <Trophy className="w-4 h-4 text-yellow-400" />
-                  <span className="font-bold">{userStats.totalPoints} XP</span>
+                  <span className="font-bold text-white">{userStats.totalPoints} XP</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-1">
+                <div className="flex items-center gap-2 bg-white/30 backdrop-blur-sm rounded-lg px-3 py-1 shadow-lg">
                   <Star className="w-4 h-4 text-orange-400" />
-                  <span className="font-bold">{userStats.streak} day streak</span>
+                  <span className="font-bold text-white">{userStats.streak} day streak</span>
                 </div>
               </div>
             </div>
-            <div className="text-4xl">🗺️</div>
+            <div className="text-4xl drop-shadow-lg">🗺️</div>
           </div>
         </CardContent>
       </Card>
