@@ -1,8 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { MongoClient } from "mongodb"
-import bcrypt from "bcryptjs"
-
-const client = new MongoClient(process.env.MONGODB_URI!)
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,34 +11,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = (await client.connect()).db()
-    
-    // Check if user already exists
-    const existingUser = await db.collection("users").findOne({ email })
-    if (existingUser) {
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create user
-    const result = await db.collection("users").insertOne({
-      name,
-      email,
-      password: hashedPassword,
-      createdAt: new Date(),
-      points: 0,
-      level: 1,
-      visitedLocations: [],
-      badges: [],
-    })
+    // For demo purposes - in production you'd save to database
+    console.log("Demo registration:", { name, email })
 
     return NextResponse.json(
-      { message: "User created successfully", userId: result.insertedId },
+      { message: "Demo account created successfully", userId: "demo-" + Date.now() },
       { status: 201 }
     )
   } catch (error) {

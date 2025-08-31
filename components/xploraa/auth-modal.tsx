@@ -121,6 +121,8 @@ export default function AuthModal({ onClose, isDarkMode = false }: AuthModalProp
           </CardTitle>
           <CardDescription className={isDarkMode ? 'text-gray-300' : 'text-slate-600'}>
             Join the adventure and start exploring!
+            <br />
+            <span className="text-xs text-purple-500 font-semibold">Demo: demo@xploraa.com / demo123</span>
           </CardDescription>
         </CardHeader>
 

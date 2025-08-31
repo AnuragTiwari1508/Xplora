@@ -1,60 +1,34 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { MongoDBAdapter } from "@auth/mongodb-adapter"
-import { MongoClient } from "mongodb"
-import bcrypt from "bcryptjs"
 
-const client = new MongoClient(process.env.MONGODB_URI!)
-const clientPromise = client.connect()
-
+// Basic configuration that works without database for deployment
 export const authOptions = {
-  adapter: MongoDBAdapter(clientPromise),
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-demo-deployment-12345",
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    ] : []),
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        try {
-          const db = (await clientPromise).db()
-          const user = await db.collection("users").findOne({
-            email: credentials.email
-          })
-
-          if (!user) {
-            return null
-          }
-
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password,
-            user.password
-          )
-
-          if (!isPasswordValid) {
-            return null
-          }
-
+      async authorize(credentials: any) {
+        // Simple demo user for deployment
+        if (credentials?.email === "demo@xploraa.com" && credentials?.password === "demo123") {
           return {
-            id: user._id.toString(),
-            email: user.email,
-            name: user.name,
-            image: user.image,
+            id: "1",
+            email: "demo@xploraa.com",
+            name: "Demo Explorer",
+            image: null,
           }
-        } catch (error) {
-          console.error("Auth error:", error)
-          return null
         }
+        return null
       }
     })
   ],
@@ -62,15 +36,15 @@ export const authOptions = {
     strategy: "jwt" as const,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.userId = user.id
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (token.userId) {
-        session.user.id = token.userId as string
+        session.user.id = token.userId
       }
       return session
     },
