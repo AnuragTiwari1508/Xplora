@@ -3,11 +3,12 @@
 import type React from "react"
 
 import { useState, useMemo, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Home, Users, Trophy, Gamepad2, User, MapPin, Megaphone, BookOpen, Newspaper, Star, Map, Gift, Zap } from "lucide-react"
+import { Home, Users, Trophy, Gamepad2, User, MapPin, Megaphone, BookOpen, Newspaper, Star, Map, Gift, Zap, UserPlus } from "lucide-react"
 import Starfield from "./starfield"
 import AROverlay from "./ar-overlay"
 import BottomNav from "./bottom-nav"
@@ -16,6 +17,8 @@ import MapplsNativeMap from "./mappls-native-map"
 import { UserProfile } from "./user-profile"
 import SpinWheel from "./spin-wheel"
 import ScratchCard from "./scratch-card"
+import AuthModal from "./auth-modal"
+import UserMenu from "./user-menu"
 import { gameLocations, achievements } from "@/lib/mappls-config"
 
 type Tab = "home" | "map" | "community" | "leaderboard" | "games" | "profile"
@@ -30,12 +33,14 @@ const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
 ]
 
 export default function XploraaAppShell() {
+  const { data: session, status } = useSession()
   const [active, setActive] = useState<Tab>("home")
   const [userPoints, setUserPoints] = useState(1250)
   const [visitedLocations, setVisitedLocations] = useState<string[]>(["cafe-1", "landmark-1"])
   const [userStreak, setUserStreak] = useState(6)
   const [totalCoupons, setTotalCoupons] = useState(8)
   const [isDarkMode, setIsDarkMode] = useState(false) // Dark mode toggle state
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   // Handle location visits from the game map
   const handleLocationVisit = (locationId: string, points: number) => {
@@ -180,15 +185,15 @@ export default function XploraaAppShell() {
                 <span className={`text-pretty font-bold text-2xl ${
                   isDarkMode ? 'text-white' : 'text-slate-800'
                 }`}>
-                  {active === "map" && "🗺️ Gamified Map Explorer"}
+                  {active === "map" && "🗺️ Interactive Map Explorer"}
                   {active === "profile" && "👤 Your Gaming Profile"}
-                  {active === "home" && "🏠 Discover Indore"}
+                  {active === "home" && "🏠 Discover Your City"}
                   {active === "community" && "👥 Explorer Community"}
                   {active === "leaderboard" && "🏆 Top Explorers"}
                   {active === "games" && "🎮 Reward Games"}
                 </span>
-                <span className="ml-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-3 py-1 text-xs text-white font-semibold shadow-lg">
-                  Indore Edition
+                <span className="ml-3 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 px-3 py-1 text-xs text-white font-semibold shadow-lg">
+                  Adventure Edition
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -207,19 +212,30 @@ export default function XploraaAppShell() {
                   {isDarkMode ? '🌙' : '☀️'}
                 </Button>
                 
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={() => setActive("games")}
-                  className={`hidden md:flex border ${
-                    isDarkMode 
-                      ? 'bg-gradient-to-r from-amber-900/60 to-orange-900/60 hover:from-amber-800/80 hover:to-orange-800/80 border-amber-500 text-amber-200' 
-                      : 'bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 border-amber-300 text-amber-800'
-                  }`}
-                >
-                  <Star className={`mr-2 h-4 w-4 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                  <span className="font-bold">{userPoints}</span>
-                </Button>
+                {/* Authentication Section */}
+                {session?.user ? (
+                  <UserMenu 
+                    user={session.user} 
+                    userPoints={userPoints}
+                    onNavigate={(tab) => setActive(tab as Tab)}
+                    isDarkMode={isDarkMode}
+                  />
+                ) : (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={() => setShowAuthModal(true)}
+                    className={`border ${
+                      isDarkMode 
+                        ? 'bg-gradient-to-r from-purple-900/60 to-blue-900/60 hover:from-purple-800/80 hover:to-blue-800/80 border-purple-500 text-purple-200' 
+                        : 'bg-gradient-to-r from-purple-100 to-blue-100 hover:from-purple-200 hover:to-blue-200 border-purple-300 text-purple-800'
+                    }`}
+                  >
+                    <UserPlus className={`mr-2 h-4 w-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                    <span className="font-bold">Login</span>
+                  </Button>
+                )}
+                
                 <Button 
                   size="sm" 
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg border-0"
@@ -262,6 +278,14 @@ export default function XploraaAppShell() {
 
       {/* Mobile bottom nav */}
       <BottomNav active={active} onChange={setActive} />
+      
+      {/* Authentication Modal */}
+      {showAuthModal && (
+        <AuthModal 
+          onClose={() => setShowAuthModal(false)} 
+          isDarkMode={isDarkMode}
+        />
+      )}
     </div>
   )
 }
@@ -276,7 +300,7 @@ function HomeSection({ userStats, onNavigate, isDarkMode }: { userStats: any; on
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-2">Welcome back, Explorer! 🎮</h1>
-              <p className="text-white/90 mb-4">Ready to discover more of Indore today?</p>
+              <p className="text-white/90 mb-4">Ready to discover amazing places around you?</p>
               <div className="flex gap-3">
                 <div className="flex items-center gap-2 bg-white/20 rounded-lg px-3 py-1">
                   <Trophy className="w-4 h-4 text-yellow-400" />
@@ -424,7 +448,7 @@ function ScheduleCard({ isDarkMode }: { isDarkMode: boolean }) {
             : 'border-blue-200 bg-blue-50'
         }`}>
           <div>
-            <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>🏛️ Explore Rajwada Palace</p>
+            <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>🏛️ Explore Historic Palace</p>
             <p className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-slate-600'}`}>1.2 km away • 250 XP + Heritage Hunter badge</p>
           </div>
           <Button size="sm" variant="outline" className={
@@ -456,7 +480,7 @@ function ScheduleCard({ isDarkMode }: { isDarkMode: boolean }) {
 }
 
 // Community - Dark theme
-function CommunitySection() {
+function CommunitySection({ isDarkMode }: { isDarkMode: boolean }) {
   const communityPosts = [
     { user: "Aarav K.", location: "Coffee Culture", activity: "Earned Coffee Explorer badge", points: 300, time: "2h ago", avatar: "/diverse-professional-profiles.png" },
     { user: "Priya S.", location: "Rajwada Palace", activity: "Completed heritage trail", points: 500, time: "4h ago", avatar: "/diverse-user-avatars.png" },
@@ -515,7 +539,7 @@ function CommunitySection() {
 }
 
 // Dark Leaderboard
-function LeaderboardSection({ userPoints }: { userPoints: number }) {
+function LeaderboardSection({ userPoints, isDarkMode }: { userPoints: number; isDarkMode: boolean }) {
   const leaderboardData = [
     { rank: 1, name: "Aarav Sharma", pts: 2840, title: "Local Legend", streak: 12, badge: "👑" },
     { rank: 2, name: "Priya Gupta", pts: 2650, title: "Explorer Elite", streak: 8, badge: "🏆" },
@@ -548,7 +572,7 @@ function LeaderboardSection({ userPoints }: { userPoints: number }) {
             </span>
             <span className="text-sm font-normal text-gray-300">This Week</span>
           </CardTitle>
-          <CardDescription className="text-gray-300">Top explorers in Indore</CardDescription>
+          <CardDescription className="text-gray-300">Top explorers in your area</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {leaderboardData.map((player) => (
@@ -579,7 +603,7 @@ function LeaderboardSection({ userPoints }: { userPoints: number }) {
 }
 
 // Dark Games Section
-function GamesSection({ userPoints, totalCoupons, onPointsUpdate }: { userPoints: number; totalCoupons: number; onPointsUpdate: (points: number) => void }) {
+function GamesSection({ userPoints, totalCoupons, onPointsUpdate, isDarkMode }: { userPoints: number; totalCoupons: number; onPointsUpdate: (points: number) => void; isDarkMode: boolean }) {
   return (
     <div className="space-y-6">
       {/* Rewards Summary - Dark */}
