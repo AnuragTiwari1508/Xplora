@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { addUser, findUserByEmail } from "@/lib/user-store"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,11 +12,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For demo purposes - in production you'd save to database
-    console.log("Demo registration:", { name, email })
+    // Check if user already exists
+    const existingUser = findUserByEmail(email)
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User with this email already exists" },
+        { status: 409 }
+      )
+    }
+
+    // Create new user
+    const newUser = addUser({ name, email, password })
+
+    console.log("User registered successfully:", { id: newUser.id, name, email })
 
     return NextResponse.json(
-      { message: "Demo account created successfully", userId: "demo-" + Date.now() },
+      { 
+        message: "Account created successfully", 
+        userId: newUser.id,
+        user: { id: newUser.id, name: newUser.name, email: newUser.email }
+      },
       { status: 201 }
     )
   } catch (error) {
