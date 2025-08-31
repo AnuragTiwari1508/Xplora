@@ -12,6 +12,7 @@ import Starfield from "./starfield"
 import AROverlay from "./ar-overlay"
 import BottomNav from "./bottom-nav"
 import { GameMap } from "./game-map"
+import MapplsNativeMap from "./mappls-native-map"
 import { UserProfile } from "./user-profile"
 import SpinWheel from "./spin-wheel"
 import ScratchCard from "./scratch-card"
@@ -186,7 +187,8 @@ export default function XploraaAppShell() {
             {active === "home" && <HomeSection userStats={userStats} onNavigate={setActive} />}
             {active === "map" && (
               <div className="h-screen w-full">
-                <GameMap
+                {/* Use only your HTML MapPLS integration */}
+                <MapplsNativeMap
                   userPoints={userPoints}
                   onLocationVisit={handleLocationVisit}
                   visitedLocations={visitedLocations}

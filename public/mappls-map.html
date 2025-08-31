@@ -238,6 +238,17 @@
         function visitPlace(placeName) {
             alert(`🎉 Congratulations! You visited ${placeName}!\n\n+100 XP earned!\n🎁 Special coupon unlocked!`);
             console.log(`🎯 Player visited: ${placeName}`);
+            
+            // Send message to parent React app (if embedded in iframe)
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'locationVisit',
+                    locationId: placeName.toLowerCase().replace(/\s+/g, '-'),
+                    location: placeName,
+                    points: 100,
+                    coupon: `${placeName} special offer!`
+                }, '*');
+            }
         }
         
         function getUserLocation() {
@@ -444,10 +455,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Xploraa Map Ready!');
             
+            // Notify parent React app that map is ready
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'mapReady' }, '*');
+            }
+            
             // Auto-create character after 5 seconds
             setTimeout(() => {
                 createAnimatedCharacter();
             }, 5000);
+        });
+
+        // Listen for messages from parent React app
+        window.addEventListener('message', function(event) {
+            console.log('📨 Received message from parent:', event.data);
+            
+            if (event.data.action === 'startAnimation') {
+                startCharacterAnimation();
+            } else if (event.data.action === 'stopAnimation') {
+                stopCharacterAnimation();
+            } else if (event.data.action === 'changeCharacter') {
+                changeCharacter();
+            } else if (event.data.type === 'init') {
+                // Update user stats from React app
+                console.log('📊 Received user stats:', event.data);
+            }
         });
     </script>
 </body>
