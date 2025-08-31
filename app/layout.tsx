@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Montserrat, Open_Sans } from "next/font/google"
 import { Suspense } from "react"
+import AuthProvider from "@/components/xploraa/auth-provider"
+import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
   title: "Xploraa",
@@ -31,7 +33,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${openSans.variable} ${montserrat.variable} antialiased`}>
       <body className="font-sans">
-        <Suspense fallback={null}>{children}</Suspense>
+        <AuthProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
         <Analytics />
       </body>
     </html>
