@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 
 // Basic configuration that works without database for deployment
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-demo-deployment-12345",
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
       GoogleProvider({
