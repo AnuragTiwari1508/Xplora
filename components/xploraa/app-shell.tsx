@@ -125,38 +125,62 @@ export default function XploraaAppShell() {
             
             {/* User Stats in Sidebar - Dark theme */}
             <div className="mt-8 space-y-3">
-              <div className="rounded-xl border-2 border-emerald-600 p-4 bg-gradient-to-r from-emerald-900/50 to-green-900/50 shadow-sm">
+              <div className={`rounded-xl border-2 p-4 shadow-sm ${
+                isDarkMode 
+                  ? 'border-blue-600 bg-gradient-to-r from-blue-900/40 to-indigo-900/40' 
+                  : 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50'
+              }`}>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-500 rounded-full">
                     <MapPin className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-emerald-300 font-semibold uppercase tracking-wide">Locations Visited</p>
-                    <p className="text-lg font-bold text-emerald-100">{visitedLocations.length} / {gameLocations.length}</p>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isDarkMode ? 'text-gray-300' : 'text-slate-600'
+                    }`}>Locations Visited</p>
+                    <p className={`text-lg font-bold ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>{visitedLocations.length} / {gameLocations.length}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="rounded-xl border-2 border-amber-600 p-4 bg-gradient-to-r from-amber-900/50 to-orange-900/50 shadow-sm">
+              <div className={`rounded-xl border-2 p-4 shadow-sm ${
+                isDarkMode 
+                  ? 'border-blue-600 bg-gradient-to-r from-blue-900/40 to-indigo-900/40' 
+                  : 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50'
+              }`}>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-500 rounded-full">
                     <Trophy className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-amber-300 font-semibold uppercase tracking-wide">Points Earned</p>
-                    <p className="text-lg font-bold text-amber-100">{userPoints.toLocaleString()}</p>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isDarkMode ? 'text-gray-300' : 'text-slate-600'
+                    }`}>Points Earned</p>
+                    <p className={`text-lg font-bold ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>{userPoints.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
               
-              <div className="rounded-xl border-2 border-rose-600 p-4 bg-gradient-to-r from-rose-900/50 to-pink-900/50 shadow-sm">
+              <div className={`rounded-xl border-2 p-4 shadow-sm ${
+                isDarkMode 
+                  ? 'border-blue-600 bg-gradient-to-r from-blue-900/40 to-indigo-900/40' 
+                  : 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50'
+              }`}>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-rose-500 rounded-full">
                     <Star className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-rose-300 font-semibold uppercase tracking-wide">Current Streak</p>
-                    <p className="text-lg font-bold text-rose-100">{userStreak} days 🔥</p>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${
+                      isDarkMode ? 'text-gray-300' : 'text-slate-600'
+                    }`}>Current Streak</p>
+                    <p className={`text-lg font-bold ${
+                      isDarkMode ? 'text-white' : 'text-slate-900'
+                    }`}>{userStreak} days 🔥</p>
                   </div>
                 </div>
               </div>
@@ -340,16 +364,16 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🏆 Leaderboard", 
         desc: "See top explorers", 
         accent: "text-yellow-400", 
-        bg: isDarkMode ? "from-yellow-900/40 to-orange-900/40" : "from-yellow-50 to-orange-50", 
-        border: isDarkMode ? "border-yellow-600" : "border-yellow-200", 
+        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "leaderboard" as Tab 
       },
       { 
         title: "🗺️ Explore Map", 
         desc: "Find nearby rewards", 
         accent: "text-blue-400", 
-        bg: isDarkMode ? "from-blue-900/40 to-indigo-900/40" : "from-blue-50 to-indigo-50", 
-        border: isDarkMode ? "border-blue-600" : "border-blue-200", 
+        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "map" as Tab 
       },
       { 
@@ -364,24 +388,24 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🎮 Play Games", 
         desc: "Spin & win rewards", 
         accent: "text-green-400", 
-        bg: isDarkMode ? "from-green-900/40 to-emerald-900/40" : "from-green-50 to-emerald-50", 
-        border: isDarkMode ? "border-green-600" : "border-green-200", 
+        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "games" as Tab 
       },
       { 
         title: "🏅 Achievements", 
         desc: "Track progress", 
         accent: "text-indigo-400", 
-        bg: isDarkMode ? "from-indigo-900/40 to-purple-900/40" : "from-indigo-50 to-purple-50", 
-        border: isDarkMode ? "border-indigo-600" : "border-indigo-200", 
+        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "profile" as Tab 
       },
       { 
         title: "🎁 Rewards", 
         desc: "Claim coupons", 
         accent: "text-red-400", 
-        bg: isDarkMode ? "from-red-900/40 to-pink-900/40" : "from-red-50 to-pink-50", 
-        border: isDarkMode ? "border-red-600" : "border-red-200", 
+        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "profile" as Tab 
       },
     ],
