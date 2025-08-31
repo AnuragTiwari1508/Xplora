@@ -92,12 +92,14 @@ export default function XploraaAppShell() {
           <div className="p-6">
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <div className={`h-8 w-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 ring-2 ${
+                <div className={`h-8 w-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 ring-2 flex items-center justify-center ${
                   isDarkMode ? 'ring-blue-400' : 'ring-blue-200'
-                }`} />
+                }`}>
+                  <span className="text-white text-lg">🍄</span>
+                </div>
                 <span className={`font-bold text-xl tracking-wide ${
                   isDarkMode ? 'text-white' : 'text-slate-800'
-                }`}>Xploraa</span>
+                }`}>Xplora</span>
               </div>
               <p className={`mt-2 text-sm font-medium ${
                 isDarkMode ? 'text-gray-300' : 'text-slate-600'
@@ -198,16 +200,20 @@ export default function XploraaAppShell() {
           }`}>
             <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 md:px-8">
               <div className="flex items-center gap-3 md:hidden">
-                <div className={`h-6 w-6 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 ring-2 ${
+                <div className={`h-6 w-6 rounded-md bg-gradient-to-r from-blue-600 to-purple-600 ring-2 flex items-center justify-center ${
                   isDarkMode ? 'ring-blue-400' : 'ring-blue-200'
-                }`} />
+                }`}>
+                  <span className="text-white text-sm">🍄</span>
+                </div>
                 <span className={`font-bold text-base ${
                   isDarkMode ? 'text-white' : 'text-slate-800'
-                }`}>Xploraa</span>
+                }`}>Xplora</span>
               </div>
               <div className="hidden md:block">
                 <span className={`text-pretty font-bold text-2xl ${
                   isDarkMode ? 'text-white' : 'text-slate-800'
+                } ${
+                  active === "home" ? (isDarkMode ? 'drop-shadow-[0_4px_8px_rgba(29,78,216,1)]' : 'drop-shadow-[0_4px_8px_rgba(37,99,235,1)]') : ''
                 }`}>
                   {active === "map" && "🗺️ Interactive Map Explorer"}
                   {active === "profile" && "👤 Your Gaming Profile"}
@@ -216,7 +222,11 @@ export default function XploraaAppShell() {
                   {active === "leaderboard" && "🏆 Top Explorers"}
                   {active === "games" && "🎮 Reward Games"}
                 </span>
-                <span className="ml-3 rounded-full bg-gradient-to-r from-emerald-500 to-blue-500 px-3 py-1 text-xs text-white font-semibold shadow-lg">
+                <span className={`ml-3 rounded-xl border-2 p-2 text-xs font-semibold shadow-lg ${
+                  isDarkMode 
+                    ? 'border-blue-600 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 text-gray-300' 
+                    : 'border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 text-slate-600'
+                }`}>
                   Adventure Edition
                 </span>
               </div>
@@ -364,7 +374,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🏆 Leaderboard", 
         desc: "See top explorers", 
         accent: "text-yellow-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "leaderboard" as Tab 
       },
@@ -372,7 +382,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🗺️ Explore Map", 
         desc: "Find nearby rewards", 
         accent: "text-blue-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "map" as Tab 
       },
@@ -380,7 +390,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "👥 Community", 
         desc: "Join explorers", 
         accent: "text-purple-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "community" as Tab 
       },
@@ -388,7 +398,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🎮 Play Games", 
         desc: "Spin & win rewards", 
         accent: "text-green-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "games" as Tab 
       },
@@ -396,7 +406,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🏅 Achievements", 
         desc: "Track progress", 
         accent: "text-indigo-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "profile" as Tab 
       },
@@ -404,7 +414,7 @@ function TilesGrid({ onNavigate, isDarkMode }: { onNavigate: (tab: Tab) => void;
         title: "🎁 Rewards", 
         desc: "Claim coupons", 
         accent: "text-red-400", 
-        bg: isDarkMode ? "from-purple-900/40 to-pink-900/40" : "from-purple-50 to-pink-50", 
+        bg: isDarkMode ? "from-purple-400/60 to-blue-400/60" : "from-purple-50 to-pink-50", 
         border: isDarkMode ? "border-purple-600" : "border-purple-200", 
         tab: "profile" as Tab 
       },
