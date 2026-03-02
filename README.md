@@ -41,16 +41,14 @@ Framework: React.js / TypeScript
 
 Styling: Tailwind CSS
 
-Maps: [Leaflet / Mapbox / Google Maps API]
-
-State Management: Context API / Redux
+Maps: [Mappls API]
 
 Backend
 Runtime: Node.js
 
 Framework: Express.js
 
-Database: MongoDB / PostgreSQL
+Database: MongoDB
 
 Geo-Spatial Queries: Used to calculate the distance between user coordinates and shop coordinates.
 
